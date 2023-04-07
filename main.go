@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	. "lua_go/api"
+
+	_ "lua_go/binchunk"
 	"lua_go/state"
 )
 
 func main() {
 	ls := state.New()
+
 	ls.PushBoolean(true)
 	printStack(ls)
 	ls.PushInteger(10)
@@ -39,7 +42,7 @@ func printStack(ls LuaState) {
 			fmt.Printf("[%g]", ls.ToNumber(i))
 		case LUA_TSTRING:
 			fmt.Printf("[%q]", ls.ToString(i))
-		default:
+		default: // other values
 			fmt.Printf("[%s]", ls.TypeName(t))
 		}
 	}
