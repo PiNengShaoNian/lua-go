@@ -2,33 +2,42 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	. "lua_go/api"
-
-	_ "lua_go/binchunk"
+	"lua_go/binchunk"
 	"lua_go/state"
+	. "lua_go/vm"
+	"os"
 )
 
 func main() {
-	ls := state.New()
+	if len(os.Args) > 1 {
+		data, err := ioutil.ReadFile(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
 
-	ls.PushBoolean(true)
-	printStack(ls)
-	ls.PushInteger(10)
-	printStack(ls)
-	ls.PushNil()
-	printStack(ls)
-	ls.PushString("hello")
-	printStack(ls)
-	ls.PushValue(-4)
-	printStack(ls)
-	ls.Replace(3)
-	printStack(ls)
-	ls.SetTop(6)
-	printStack(ls)
-	ls.Remove(-3)
-	printStack(ls)
-	ls.SetTop(-5)
-	printStack(ls)
+		proto := binchunk.Undump(data)
+		luaMain(proto)
+	}
+}
+
+func luaMain(proto *binchunk.Prototype) {
+	nRegs := int(proto.MaxStackSize)
+	ls := state.New(nRegs+8, proto)
+	ls.SetTop(nRegs)
+	for {
+		pc := ls.PC()
+		inst := Instruction(ls.Fetch())
+		if inst.Opcode() != OP_RETURN {
+			inst.Execute(ls)
+
+			fmt.Printf("[%02d] %s ", pc+1, inst.OpName())
+			printStack(ls)
+		} else {
+			break
+		}
+	}
 }
 
 func printStack(ls LuaState) {

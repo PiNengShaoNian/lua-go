@@ -1,5 +1,7 @@
 package vm
 
+import "lua_go/api"
+
 const MAXARG_Bx = 1<<18 - 1       // 262143
 const MAXARG_sBx = MAXARG_Bx >> 1 // 131071
 
@@ -60,4 +62,13 @@ func (ls Instruction) BMode() byte {
 
 func (ls Instruction) CMode() byte {
 	return opcodes[ls.Opcode()].argCMode
+}
+
+func (ls Instruction) Execute(vm api.LuaVM) {
+	action := opcodes[ls.Opcode()].action
+	if action != nil {
+		action(ls, vm)
+	} else {
+		panic(ls.OpName())
+	}
 }

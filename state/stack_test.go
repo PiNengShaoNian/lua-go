@@ -3,7 +3,7 @@ package state
 import "testing"
 
 func TestStack(t *testing.T) {
-	ls := New()
+	ls := New(20, nil)
 
 	var str string
 

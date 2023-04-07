@@ -43,4 +43,5 @@ type LuaState interface {
 	Arith(op ArithOp)
 	Compare(idx1, idx2 int, op CompareOp) bool
 	Concat(n int)
+	Len(idx int)
 }
