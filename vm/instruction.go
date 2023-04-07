@@ -20,44 +20,44 @@ const MAXARG_sBx = MAXARG_Bx >> 1 // 131071
 */
 type Instruction uint32
 
-func (self Instruction) Opcode() int {
-	return int(self & 0x3F)
+func (ls Instruction) Opcode() int {
+	return int(ls & 0x3F)
 }
 
-func (self Instruction) ABC() (a, b, c int) {
-	a = int(self >> 6 & 0xFF)
-	c = int(self >> 14 & 0x1FF)
-	b = int(self >> 23 & 0x1FF)
+func (ls Instruction) ABC() (a, b, c int) {
+	a = int(ls >> 6 & 0xFF)
+	c = int(ls >> 14 & 0x1FF)
+	b = int(ls >> 23 & 0x1FF)
 	return
 }
 
-func (self Instruction) ABx() (a, bx int) {
-	a = int(self >> 6 & 0xFF)
-	bx = int(self >> 14)
+func (ls Instruction) ABx() (a, bx int) {
+	a = int(ls >> 6 & 0xFF)
+	bx = int(ls >> 14)
 	return
 }
 
-func (self Instruction) AsBx() (a, sbx int) {
-	a, bx := self.ABx()
+func (ls Instruction) AsBx() (a, sbx int) {
+	a, bx := ls.ABx()
 	return a, bx - MAXARG_sBx
 }
 
-func (self Instruction) Ax() int {
-	return int(self >> 6)
+func (ls Instruction) Ax() int {
+	return int(ls >> 6)
 }
 
-func (self Instruction) OpName() string {
-	return opcodes[self.Opcode()].name
+func (ls Instruction) OpName() string {
+	return opcodes[ls.Opcode()].name
 }
 
-func (self Instruction) OpMode() byte {
-	return opcodes[self.Opcode()].opMode
+func (ls Instruction) OpMode() byte {
+	return opcodes[ls.Opcode()].opMode
 }
 
-func (self Instruction) BMode() byte {
-	return opcodes[self.Opcode()].argBMode
+func (ls Instruction) BMode() byte {
+	return opcodes[ls.Opcode()].argBMode
 }
 
-func (self Instruction) CMode() byte {
-	return opcodes[self.Opcode()].argCMode
+func (ls Instruction) CMode() byte {
+	return opcodes[ls.Opcode()].argCMode
 }

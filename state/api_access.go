@@ -2,75 +2,75 @@ package state
 
 import (
 	"fmt"
-	. "lua_go/api"
+	"lua_go/api"
 )
 
-func (self *luaState) TypeName(tp LuaType) string {
+func (ls *luaState) TypeName(tp api.LuaType) string {
 	switch tp {
-	case LUA_TNONE:
+	case api.LUA_TNONE:
 		return "no value"
-	case LUA_TNIL:
+	case api.LUA_TNIL:
 		return "nil"
-	case LUA_TBOOLEAN:
+	case api.LUA_TBOOLEAN:
 		return "boolean"
-	case LUA_TNUMBER:
+	case api.LUA_TNUMBER:
 		return "number"
-	case LUA_TSTRING:
+	case api.LUA_TSTRING:
 		return "string"
-	case LUA_TTABLE:
+	case api.LUA_TTABLE:
 		return "table"
-	case LUA_TFUNCTION:
+	case api.LUA_TFUNCTION:
 		return "function"
-	case LUA_TTHREAD:
+	case api.LUA_TTHREAD:
 		return "thread"
 	default:
 		return "userdata"
 	}
 }
 
-func (self *luaState) Type(idx int) LuaType {
-	if self.stack.isValid(idx) {
-		val := self.stack.get(idx)
+func (ls *luaState) Type(idx int) api.LuaType {
+	if ls.stack.isValid(idx) {
+		val := ls.stack.get(idx)
 		return typeOf(val)
 	}
-	return LUA_TNONE
+	return api.LUA_TNONE
 }
 
-func (self *luaState) IsNone(idx int) bool {
-	return self.Type(idx) == LUA_TNONE
+func (ls *luaState) IsNone(idx int) bool {
+	return ls.Type(idx) == api.LUA_TNONE
 }
 
-func (self *luaState) IsNil(idx int) bool {
-	return self.Type(idx) == LUA_TNIL
+func (ls *luaState) IsNil(idx int) bool {
+	return ls.Type(idx) == api.LUA_TNIL
 }
 
-func (self *luaState) IsNoneOrNil(idx int) bool {
-	return self.Type(idx) <= LUA_TNIL
+func (ls *luaState) IsNoneOrNil(idx int) bool {
+	return ls.Type(idx) <= api.LUA_TNIL
 }
 
-func (self *luaState) IsBoolean(idx int) bool {
-	return self.Type(idx) == LUA_TBOOLEAN
+func (ls *luaState) IsBoolean(idx int) bool {
+	return ls.Type(idx) == api.LUA_TBOOLEAN
 }
 
-func (self *luaState) IsString(idx int) bool {
-	t := self.Type(idx)
-	return t == LUA_TSTRING || t == LUA_TNUMBER
+func (ls *luaState) IsString(idx int) bool {
+	t := ls.Type(idx)
+	return t == api.LUA_TSTRING || t == api.LUA_TNUMBER
 }
 
-func (self *luaState) IsNumber(idx int) bool {
-	_, ok := self.ToNumberX(idx)
+func (ls *luaState) IsNumber(idx int) bool {
+	_, ok := ls.ToNumberX(idx)
 
 	return ok
 }
 
-func (self *luaState) IsInteger(idx int) bool {
-	val := self.stack.get(idx)
+func (ls *luaState) IsInteger(idx int) bool {
+	val := ls.stack.get(idx)
 	_, ok := val.(int64)
 	return ok
 }
 
-func (self *luaState) ToBoolean(idx int) bool {
-	val := self.stack.get(idx)
+func (ls *luaState) ToBoolean(idx int) bool {
+	val := ls.stack.get(idx)
 	return convertToBoolean(val)
 }
 
@@ -85,41 +85,41 @@ func convertToBoolean(val luaValue) bool {
 	}
 }
 
-func (self *luaState) ToNumber(idx int) float64 {
-	n, _ := self.ToNumberX(idx)
+func (ls *luaState) ToNumber(idx int) float64 {
+	n, _ := ls.ToNumberX(idx)
 	return n
 }
 
-func (self *luaState) ToNumberX(idx int) (float64, bool) {
-	val := self.stack.get(idx)
+func (ls *luaState) ToNumberX(idx int) (float64, bool) {
+	val := ls.stack.get(idx)
 	return convertToFloat(val)
 }
 
-func (self *luaState) ToInteger(idx int) int64 {
-	i, _ := self.ToIntegerX(idx)
+func (ls *luaState) ToInteger(idx int) int64 {
+	i, _ := ls.ToIntegerX(idx)
 	return i
 }
 
-func (self *luaState) ToIntegerX(idx int) (int64, bool) {
-	val := self.stack.get(idx)
+func (ls *luaState) ToIntegerX(idx int) (int64, bool) {
+	val := ls.stack.get(idx)
 	return convertToInteger(val)
 }
 
-func (self *luaState) ToStringX(idx int) (string, bool) {
-	val := self.stack.get(idx)
+func (ls *luaState) ToStringX(idx int) (string, bool) {
+	val := ls.stack.get(idx)
 	switch x := val.(type) {
 	case string:
 		return x, true
 	case int64, float64:
 		s := fmt.Sprintf("%v", x)
-		self.stack.set(idx, s) // 注意这里会修改栈!
+		ls.stack.set(idx, s) // 注意这里会修改栈!
 		return s, true
 	default:
 		return "", false
 	}
 }
 
-func (self *luaState) ToString(idx int) string {
-	s, _ := self.ToStringX(idx)
+func (ls *luaState) ToString(idx int) string {
+	s, _ := ls.ToStringX(idx)
 	return s
 }

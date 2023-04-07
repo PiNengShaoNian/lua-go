@@ -1,7 +1,7 @@
 package state
 
 import (
-	. "lua_go/api"
+	"lua_go/api"
 	"lua_go/number"
 	"math"
 )
@@ -51,18 +51,18 @@ var operators = []operator{
 	{bnot, nil},
 }
 
-func (self *luaState) Arith(op ArithOp) {
+func (ls *luaState) Arith(op api.ArithOp) {
 	var a, b luaValue // operands
-	b = self.stack.pop()
-	if op != LUA_OPUNM && op != LUA_OPBNOT {
-		a = self.stack.pop()
+	b = ls.stack.pop()
+	if op != api.LUA_OPUNM && op != api.LUA_OPBNOT {
+		a = ls.stack.pop()
 	} else {
 		a = b
 	}
 
 	operator := operators[op]
 	if result := _arith(a, b, operator); result != nil {
-		self.stack.push(result)
+		ls.stack.push(result)
 	} else {
 		panic("arithmetic error!")
 	}

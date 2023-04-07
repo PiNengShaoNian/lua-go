@@ -1,16 +1,16 @@
 package state
 
-import . "lua_go/api"
+import "lua_go/api"
 
-func (self *luaState) Compare(idx1, idx2 int, op CompareOp) bool {
-	a := self.stack.get(idx1)
-	b := self.stack.get(idx2)
+func (ls *luaState) Compare(idx1, idx2 int, op api.CompareOp) bool {
+	a := ls.stack.get(idx1)
+	b := ls.stack.get(idx2)
 	switch op {
-	case LUA_OPEQ:
+	case api.LUA_OPEQ:
 		return _eq(a, b)
-	case LUA_OPLT:
+	case api.LUA_OPLT:
 		return _lt(a, b)
-	case LUA_OPLE:
+	case api.LUA_OPLE:
 		return _le(a, b)
 	default:
 		panic("invalid compare op!")

@@ -12,62 +12,62 @@ func newLuaStack(size int) *luaStack {
 	}
 }
 
-func (self *luaStack) check(n int) {
-	free := len(self.slots) - self.top
+func (ls *luaStack) check(n int) {
+	free := len(ls.slots) - ls.top
 	for i := free; i < n; i++ {
-		self.slots = append(self.slots, nil)
+		ls.slots = append(ls.slots, nil)
 	}
 }
 
-func (self *luaStack) push(val luaValue) {
-	if self.top == len(self.slots) {
+func (ls *luaStack) push(val luaValue) {
+	if ls.top == len(ls.slots) {
 		panic("stack overflow!")
 	}
-	self.slots[self.top] = val
-	self.top++
+	ls.slots[ls.top] = val
+	ls.top++
 }
 
-func (self *luaStack) pop() luaValue {
-	if self.top < 1 {
+func (ls *luaStack) pop() luaValue {
+	if ls.top < 1 {
 		panic("stack underflow!")
 	}
-	self.top--
-	val := self.slots[self.top]
-	self.slots[self.top] = nil
+	ls.top--
+	val := ls.slots[ls.top]
+	ls.slots[ls.top] = nil
 	return val
 }
 
-func (self *luaStack) absIndex(idx int) int {
+func (ls *luaStack) absIndex(idx int) int {
 	if idx >= 0 {
 		return idx
 	}
-	return idx + self.top + 1
+	return idx + ls.top + 1
 }
 
-func (self *luaStack) isValid(idx int) bool {
-	absIdx := self.absIndex(idx)
-	return absIdx > 0 && absIdx <= self.top
+func (ls *luaStack) isValid(idx int) bool {
+	absIdx := ls.absIndex(idx)
+	return absIdx > 0 && absIdx <= ls.top
 }
 
-func (self *luaStack) get(idx int) luaValue {
-	absIdx := self.absIndex(idx)
-	if absIdx > 0 && absIdx <= self.top {
-		return self.slots[absIdx-1]
+func (ls *luaStack) get(idx int) luaValue {
+	absIdx := ls.absIndex(idx)
+	if absIdx > 0 && absIdx <= ls.top {
+		return ls.slots[absIdx-1]
 	}
 	return nil
 }
 
-func (self *luaStack) set(idx int, val luaValue) {
-	absIdx := self.absIndex(idx)
-	if absIdx > 0 && absIdx <= self.top {
-		self.slots[absIdx-1] = val
+func (ls *luaStack) set(idx int, val luaValue) {
+	absIdx := ls.absIndex(idx)
+	if absIdx > 0 && absIdx <= ls.top {
+		ls.slots[absIdx-1] = val
 		return
 	}
 	panic("invalid index!")
 }
 
-func (self *luaStack) reverse(from, to int) {
-	slots := self.slots
+func (ls *luaStack) reverse(from, to int) {
+	slots := ls.slots
 	for from < to {
 		slots[from], slots[to] = slots[to], slots[from]
 		from++
