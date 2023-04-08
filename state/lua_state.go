@@ -1,13 +1,19 @@
 package state
 
+import "lua_go/api"
+
 type luaState struct {
-	stack *luaStack
+	registry *luaTable // 注册表
+	stack    *luaStack
 }
 
 func New() *luaState {
-	return &luaState{
-		stack: newLuaStack(20),
-	}
+	registry := newLuaTable(0, 0)
+	registry.put(api.LUA_RIDX_GLOBALS, newLuaTable(0, 0))
+
+	ls := &luaState{registry: registry}
+	ls.pushLuaStack(newLuaStack(api.LUA_MINSTACK, ls))
+	return ls
 }
 
 func (ls *luaState) pushLuaStack(stack *luaStack) {

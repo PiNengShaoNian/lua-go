@@ -1,5 +1,7 @@
 package state
 
+import "lua_go/api"
+
 func (ls *luaState) SetTable(idx int) {
 	t := ls.stack.get(idx)
 	v := ls.stack.pop()
@@ -25,4 +27,15 @@ func (ls *luaState) SetI(idx int, i int64) {
 	t := ls.stack.get(idx)
 	v := ls.stack.pop()
 	ls.setTable(t, i, v)
+}
+
+func (ls *luaState) SetGlobal(name string) {
+	t := ls.registry.get(api.LUA_RIDX_GLOBALS)
+	v := ls.stack.pop()
+	ls.setTable(t, name, v)
+}
+
+func (ls *luaState) Register(name string, f api.GoFunction) {
+	ls.PushGoFunction(f)
+	ls.SetGlobal(name)
 }

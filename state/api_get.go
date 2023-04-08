@@ -35,3 +35,8 @@ func (ls *luaState) GetI(idx int, i int64) api.LuaType {
 	t := ls.stack.get(idx)
 	return ls.getTable(t, i)
 }
+
+func (ls *luaState) GetGlobal(name string) api.LuaType {
+	t := ls.registry.get(api.LUA_RIDX_GLOBALS)
+	return ls.getTable(t, name)
+}
