@@ -7,7 +7,7 @@ func loadNil(i Instruction, vm api.LuaVM) {
 	a += 1
 
 	vm.PushNil()
-	for i := a; a <= a+b; i++ {
+	for i := a; i <= a+b; i++ {
 		vm.Copy(-1, i)
 	}
 	vm.Pop(1)
