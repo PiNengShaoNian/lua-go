@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"lua_go/api"
-	"lua_go/state"
 	"os"
+
+	. "lua_go/api"
+	"lua_go/state"
 )
 
 func main() {
@@ -17,12 +18,14 @@ func main() {
 
 		ls := state.New()
 		ls.Register("print", print)
+		ls.Register("getmetatable", getMetatable)
+		ls.Register("setmetatable", setMetatable)
 		ls.Load(data, os.Args[1], "b")
 		ls.Call(0, 0)
 	}
 }
 
-func print(ls api.LuaState) int {
+func print(ls LuaState) int {
 	nArgs := ls.GetTop()
 	for i := 1; i <= nArgs; i++ {
 		if ls.IsBoolean(i) {
@@ -32,11 +35,22 @@ func print(ls api.LuaState) int {
 		} else {
 			fmt.Print(ls.TypeName(ls.Type(i)))
 		}
-
 		if i < nArgs {
 			fmt.Print("\t")
 		}
 	}
 	fmt.Println()
 	return 0
+}
+
+func getMetatable(ls LuaState) int {
+	if !ls.GetMetatable(1) {
+		ls.PushNil()
+	}
+	return 1
+}
+
+func setMetatable(ls LuaState) int {
+	ls.SetMetatable(1)
+	return 1
 }

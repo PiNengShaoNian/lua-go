@@ -19,7 +19,19 @@ func (ls *luaState) Load(chunk []byte, chunkName, mode string) int {
 
 func (ls *luaState) Call(nArgs, nResults int) {
 	val := ls.stack.get(-(nArgs + 1))
-	if c, ok := val.(*closure); ok {
+
+	c, ok := val.(*closure)
+	if !ok {
+		if mf := getMetafield(val, "__call", ls); mf != nil {
+			if c, ok = mf.(*closure); ok {
+				ls.stack.push(val)
+				ls.Insert(-(nArgs + 2))
+				nArgs += 1
+			}
+		}
+	}
+
+	if ok {
 		if c.proto != nil {
 			ls.callLuaClosure(nArgs, nResults, c)
 		} else {
