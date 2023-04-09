@@ -9,6 +9,8 @@ type luaTable struct {
 	metatable *luaTable
 	arr       []luaValue
 	_map      map[luaValue]luaValue
+	keys      map[luaValue]luaValue
+	changed   bool
 }
 
 func newLuaTable(nArr, nRec int) *luaTable {
@@ -103,4 +105,31 @@ func (lt *luaTable) len() int {
 
 func (lt *luaTable) hasMetafield(fieldName string) bool {
 	return lt.metatable != nil && lt.metatable.get(fieldName) != nil
+}
+
+func (lt *luaTable) nextKey(key luaValue) luaValue {
+	if lt.keys == nil || key == nil {
+		lt.initKeys()
+		lt.changed = false
+	}
+
+	return lt.keys[key]
+}
+
+func (lt *luaTable) initKeys() {
+	lt.keys = make(map[luaValue]luaValue)
+	var key luaValue = nil
+	for i, v := range lt.arr {
+		if v != nil {
+			lt.keys[key] = int64(i + 1)
+			key = int64(i + 1)
+		}
+	}
+
+	for k, v := range lt._map {
+		if v != nil {
+			lt.keys[key] = k
+			key = k
+		}
+	}
 }
