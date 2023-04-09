@@ -13,6 +13,6 @@ func jmp(i Instruction, vm api.LuaVM) {
 	a, sBx := i.AsBx()
 	vm.AddPC(sBx)
 	if a != 0 {
-		panic("todo!")
+		vm.CloseUpvalues(a)
 	}
 }
