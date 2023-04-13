@@ -30,6 +30,7 @@ type UnopExp struct {
 
 type BinopExp struct {
 	Line int // line of operator
+	Op   int // operator
 	Exp1 Exp
 	Exp2 Exp
 }

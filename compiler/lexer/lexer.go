@@ -178,9 +178,9 @@ func (lex *Lexer) NextToken() (line, kind int, token string) {
 	if c == '_' || isLatter(c) {
 		token := lex.scanIdentifier()
 		if kind, found := keywords[token]; found {
-			return line, kind, token // keyword
+			return lex.line, kind, token // keyword
 		} else {
-			return line, TOKEN_IDENTIFIER, token
+			return lex.line, TOKEN_IDENTIFIER, token
 		}
 	}
 
