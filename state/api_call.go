@@ -3,11 +3,18 @@ package state
 import (
 	"lua_go/api"
 	"lua_go/binchunk"
+	"lua_go/compiler"
 	"lua_go/vm"
 )
 
 func (ls *luaState) Load(chunk []byte, chunkName, mode string) int {
-	proto := binchunk.Undump(chunk)
+	var proto *binchunk.Prototype
+	if binchunk.IsBinaryChunk(chunk) {
+		proto = binchunk.Undump(chunk)
+	} else {
+		proto = compiler.Compile(string(chunk), chunkName)
+	}
+
 	c := newLuaClosure(proto)
 	ls.stack.push(c)
 	if len(proto.Upvalues) > 0 { // 设置_ENV

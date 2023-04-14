@@ -23,24 +23,24 @@ const (
 	TAG_LONG_STR  = 0x14
 )
 
-type binchunk struct {
-	header            // 头部
-	sizeUpvalues byte // 主函数upvalue数量
-	mainFunc     *Prototype
-}
+// type binchunk struct {
+// 	header            // 头部
+// 	sizeUpvalues byte // 主函数upvalue数量
+// 	mainFunc     *Prototype
+// }
 
-type header struct {
-	signature       [4]byte
-	version         byte
-	format          byte
-	luacData        [6]byte
-	cintSize        byte
-	sizetSize       byte
-	instructionSize byte
-	luaIntegerSize  byte
-	luacInt         int64
-	luacNum         float64
-}
+// type header struct {
+// 	signature       [4]byte
+// 	version         byte
+// 	format          byte
+// 	luacData        [6]byte
+// 	cintSize        byte
+// 	sizetSize       byte
+// 	instructionSize byte
+// 	luaIntegerSize  byte
+// 	luacInt         int64
+// 	luacNum         float64
+// }
 
 type Prototype struct {
 	Source          string
@@ -74,4 +74,8 @@ func Undump(data []byte) *Prototype {
 	reader.checkHeader()        // 校验头部
 	reader.readByte()           // 跳过Upvalue数量
 	return reader.readProto("") // 读取函数原型
+}
+
+func IsBinaryChunk(data []byte) bool {
+	return len(data) > 4 && string(data[:4]) == LUA_SIGNATURE
 }
