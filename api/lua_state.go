@@ -81,6 +81,7 @@ type BasicAPI interface {
 	Error() int
 	PCall(nArgs, nResults, msgh int) int
 	StringToNumber(s string) bool
+	IsFunction(idx int) bool
 }
 
 type LuaState interface {

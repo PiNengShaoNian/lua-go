@@ -116,16 +116,6 @@ func baseIPairs(ls api.LuaState) int {
 	return 3
 }
 
-func _iPairsAux(ls api.LuaState) int {
-	i := ls.ToInteger(2) + 1
-	ls.PushInteger(i)
-	if ls.GetI(1, i) == api.LUA_TNIL {
-		return 1
-	} else {
-		return 2
-	}
-}
-
 func iPairsAux(ls api.LuaState) int {
 	i := ls.CheckInteger(2) + 1
 	ls.PushInteger(i)

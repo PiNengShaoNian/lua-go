@@ -144,3 +144,9 @@ func (ls *luaState) ToPointer(idx int) interface{} {
 	// todo
 	return ls.stack.get(idx)
 }
+
+// [-0, +0, –]
+// http://www.lua.org/manual/5.3/manual.html#lua_isfunction
+func (self *luaState) IsFunction(idx int) bool {
+	return self.Type(idx) == api.LUA_TFUNCTION
+}
