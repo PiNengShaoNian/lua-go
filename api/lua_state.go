@@ -8,7 +8,7 @@ func LuaUpvalueIndex(i int) int {
 	return LUA_REGISTRYINDEX - i
 }
 
-type LuaState interface {
+type BasicAPI interface {
 	/* basic stack manipulation */
 	GetTop() int
 	AbsIndex(idx int) int
@@ -38,6 +38,7 @@ type LuaState interface {
 	ToNumberX(idx int) (float64, bool)
 	ToString(idx int) string
 	ToStringX(idx int) (string, bool)
+	ToPointer(idx int) interface{}
 	/* push functions (Go -> stack) */
 	PushNil()
 	PushBoolean(b bool)
@@ -79,6 +80,12 @@ type LuaState interface {
 	Next(idx int) bool
 	Error() int
 	PCall(nArgs, nResults, msgh int) int
+	StringToNumber(s string) bool
+}
+
+type LuaState interface {
+	BasicAPI
+	AuxLib
 }
 
 type GoFunction func(LuaState) int

@@ -139,3 +139,8 @@ func (ls *luaState) ToGoFunction(idx int) api.GoFunction {
 	}
 	return nil
 }
+
+func (ls *luaState) ToPointer(idx int) interface{} {
+	// todo
+	return ls.stack.get(idx)
+}

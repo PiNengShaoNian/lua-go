@@ -71,13 +71,13 @@ func (ls *luaState) GetMetatable(idx int) bool {
 	}
 }
 
-func (self *luaState) RawGet(idx int) api.LuaType {
-	t := self.stack.get(idx)
-	k := self.stack.pop()
-	return self.getTable(t, k, true)
+func (ls *luaState) RawGet(idx int) api.LuaType {
+	t := ls.stack.get(idx)
+	k := ls.stack.pop()
+	return ls.getTable(t, k, true)
 }
 
-func (self *luaState) RawGetI(idx int, i int64) api.LuaType {
-	t := self.stack.get(idx)
-	return self.getTable(t, i, true)
+func (ls *luaState) RawGetI(idx int, i int64) api.LuaType {
+	t := ls.stack.get(idx)
+	return ls.getTable(t, i, true)
 }

@@ -72,15 +72,15 @@ func (ls *luaState) SetMetatable(idx int) {
 	}
 }
 
-func (self *luaState) RawSet(idx int) {
-	t := self.stack.get(idx)
-	v := self.stack.pop()
-	k := self.stack.pop()
-	self.setTable(t, k, v, true)
+func (ls *luaState) RawSet(idx int) {
+	t := ls.stack.get(idx)
+	v := ls.stack.pop()
+	k := ls.stack.pop()
+	ls.setTable(t, k, v, true)
 }
 
-func (self *luaState) RawSetI(idx int, i int64) {
-	t := self.stack.get(idx)
-	v := self.stack.pop()
-	self.setTable(t, i, v, true)
+func (ls *luaState) RawSetI(idx int, i int64) {
+	t := ls.stack.get(idx)
+	v := ls.stack.pop()
+	ls.setTable(t, i, v, true)
 }
