@@ -1,7 +1,7 @@
 package stdlib
 
 //#include <time.h>
-import "C"
+// import "C"
 
 import (
 	"lua_go/api"
@@ -10,7 +10,7 @@ import (
 )
 
 var sysLib = map[string]api.GoFunction{
-	"clock":     osClock,
+	// "clock":     osClock,
 	"difftime":  osDiffTime,
 	"time":      osTime,
 	"date":      osDate,
@@ -31,11 +31,11 @@ func OpenOSLib(ls api.LuaState) int {
 // os.clock ()
 // http://www.lua.org/manual/5.3/manual.html#pdf-os.clock
 // lua-5.3.4/src/loslib.c#os_clock()
-func osClock(ls api.LuaState) int {
-	c := float64(C.clock()) / float64(C.CLOCKS_PER_SEC)
-	ls.PushNumber(c)
-	return 1
-}
+// func osClock(ls api.LuaState) int {
+// 	c := float64(C.clock()) / float64(C.CLOCKS_PER_SEC)
+// 	ls.PushNumber(c)
+// 	return 1
+// }
 
 // os.difftime (t2, t1)
 // http://www.lua.org/manual/5.3/manual.html#pdf-os.difftime
