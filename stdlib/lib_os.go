@@ -195,9 +195,9 @@ func osExit(ls api.LuaState) int {
 		code := ls.OptInteger(1, 1)
 		os.Exit(int(code))
 	}
-	if ls.ToBoolean(2) {
-		//ls.Close()
-	}
+	// if ls.ToBoolean(2) {
+	//ls.Close()
+	// }
 	return 0
 }
 

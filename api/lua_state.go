@@ -21,6 +21,7 @@ type BasicAPI interface {
 	Remove(idx int)
 	Rotate(idx, n int)
 	SetTop(idx int)
+	XMove(to LuaState, n int)
 	/* access functions (stack -> GO) */
 	TypeName(tp LuaType) string
 	Type(idx int) LuaType
@@ -38,6 +39,7 @@ type BasicAPI interface {
 	ToNumberX(idx int) (float64, bool)
 	ToString(idx int) string
 	ToStringX(idx int) (string, bool)
+	ToThread(idx int) LuaState
 	ToPointer(idx int) interface{}
 	/* push functions (Go -> stack) */
 	PushNil()
@@ -65,6 +67,7 @@ type BasicAPI interface {
 	IsGoFunction(idx int) bool
 	ToGoFunction(idx int) GoFunction
 	PushGlobalTable()
+	PushThread() bool
 	GetGlobal(name string) LuaType
 	SetGlobal(name string)
 	Register(name string, f GoFunction)
@@ -82,6 +85,12 @@ type BasicAPI interface {
 	PCall(nArgs, nResults, msgh int) int
 	StringToNumber(s string) bool
 	IsFunction(idx int) bool
+	NewThread() LuaState
+	Resume(from LuaState, nArgs int) int
+	Yield(nResults int) int
+	Status() int
+	IsYieldable() bool
+	GetStack() bool // debug
 }
 
 type LuaState interface {

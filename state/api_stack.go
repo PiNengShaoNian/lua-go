@@ -1,5 +1,7 @@
 package state
 
+import "lua_go/api"
+
 func (ls *luaState) GetTop() int {
 	return ls.stack.top
 }
@@ -72,4 +74,9 @@ func (ls *luaState) SetTop(idx int) {
 			ls.stack.push(nil)
 		}
 	}
+}
+
+func (ls *luaState) XMove(to api.LuaState, n int) {
+	vals := ls.stack.popN(n)
+	to.(*luaState).stack.pushN(vals, n)
 }

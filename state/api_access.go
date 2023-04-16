@@ -147,6 +147,16 @@ func (ls *luaState) ToPointer(idx int) interface{} {
 
 // [-0, +0, –]
 // http://www.lua.org/manual/5.3/manual.html#lua_isfunction
-func (self *luaState) IsFunction(idx int) bool {
-	return self.Type(idx) == api.LUA_TFUNCTION
+func (ls *luaState) IsFunction(idx int) bool {
+	return ls.Type(idx) == api.LUA_TFUNCTION
+}
+
+func (ls *luaState) ToThread(idx int) api.LuaState {
+	val := ls.stack.get(idx)
+	if val != nil {
+		if ls, ok := val.(*luaState); ok {
+			return ls
+		}
+	}
+	return nil
 }

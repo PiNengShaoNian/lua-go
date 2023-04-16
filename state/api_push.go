@@ -40,3 +40,8 @@ func (ls *luaState) PushGoClosure(f api.GoFunction, n int) {
 	}
 	ls.stack.push(closure)
 }
+
+func (ls *luaState) PushThread() bool {
+	ls.stack.push(ls)
+	return ls.isMainThread()
+}

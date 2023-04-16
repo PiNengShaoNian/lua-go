@@ -1,6 +1,9 @@
 package state
 
-import "lua_go/api"
+import (
+	"fmt"
+	"lua_go/api"
+)
 
 func (ls *luaState) CreateTable(nArr, nRec int) {
 	t := newLuaTable(nArr, nRec)
@@ -42,7 +45,7 @@ func (ls *luaState) getTable(t, k luaValue, raw bool) api.LuaType {
 		}
 	}
 
-	panic("index error!")
+	panic(fmt.Sprintf("Cannot read properties of %s (reading '%s')", ls.TypeName(typeOf(t)), k))
 }
 
 func (ls *luaState) GetField(idx int, k string) api.LuaType {
