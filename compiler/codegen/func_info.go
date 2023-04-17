@@ -398,3 +398,8 @@ func (fi *funcInfo) emitCall(a, nArgs, nRet int) {
 func (fi *funcInfo) emitSelf(a, b, c int) {
 	fi.emitABC(vm.OP_SELF, a, b, c)
 }
+
+// r[a] = upval[b][rk(c)]
+func (fi *funcInfo) emitGetTabUp(a, b, c int) {
+	fi.emitABC(vm.OP_GETTABUP, a, b, c)
+}

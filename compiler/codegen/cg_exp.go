@@ -6,6 +6,16 @@ import (
 	"lua_go/vm"
 )
 
+// kind of operands
+const (
+	ARG_CONST = 1 // const index
+	ARG_REG   = 2 // register index
+	ARG_UPVAL = 4 // upvalue index
+	ARG_RK    = ARG_REG | ARG_CONST
+	ARG_RU    = ARG_REG | ARG_UPVAL
+	ARG_RUK   = ARG_REG | ARG_UPVAL | ARG_CONST
+)
+
 func cgExp(fi *funcInfo, node ast.Exp, a, n int) {
 	switch exp := node.(type) {
 	case *ast.NilExp:
@@ -118,11 +128,12 @@ func cgTableConstructorExp(fi *funcInfo, node *ast.TableConstructorExp, a int) {
 	}
 }
 
+// r[a] := op exp
 func cgUnopExp(fi *funcInfo, node *ast.UnopExp, a int) {
-	b := fi.allocReg()
-	cgExp(fi, node.Exp, b, 1)
+	oldRegs := fi.usedRegs
+	b, _ := expToOpArg(fi, node.Exp, ARG_REG)
 	fi.emitUnaryOp(node.Op, a, b)
-	fi.freeReg()
+	fi.usedRegs = oldRegs
 }
 
 func cgConcatExp(fi *funcInfo, node *ast.ConcatExp, a int) {
@@ -137,12 +148,14 @@ func cgConcatExp(fi *funcInfo, node *ast.ConcatExp, a int) {
 	fi.emitABC(vm.OP_CONCAT, a, b, c)
 }
 
+// r[a] := exp1 op exp2
 func cgBinopExp(fi *funcInfo, node *ast.BinopExp, a int) {
 	switch node.Op {
 	case lexer.TOKEN_OP_AND, lexer.TOKEN_OP_OR:
-		b := fi.allocReg()
-		cgExp(fi, node.Exp1, b, 1)
-		fi.freeReg()
+		oldRegs := fi.usedRegs
+
+		b, _ := expToOpArg(fi, node.Exp1, ARG_REG)
+		fi.usedRegs = oldRegs
 		if node.Op == lexer.TOKEN_OP_AND {
 			fi.emitTestSet(a, b, 0)
 		} else {
@@ -150,19 +163,16 @@ func cgBinopExp(fi *funcInfo, node *ast.BinopExp, a int) {
 		}
 		pcOfJmp := fi.emitJmp(0, 0)
 
-		b = fi.allocReg()
-		cgExp(fi, node.Exp2, b, 1)
-		fi.freeReg()
-
+		b, _ = expToOpArg(fi, node.Exp2, ARG_REG)
+		fi.usedRegs = oldRegs
 		fi.emitMove(a, b)
 		fi.fixSbx(pcOfJmp, fi.pc()-pcOfJmp)
 	default:
-		b := fi.allocReg()
-		cgExp(fi, node.Exp1, b, 1)
-		c := fi.allocReg()
-		cgExp(fi, node.Exp2, c, 1)
+		oldRegs := fi.usedRegs
+		b, _ := expToOpArg(fi, node.Exp1, ARG_RK)
+		c, _ := expToOpArg(fi, node.Exp2, ARG_RK)
 		fi.emitBinaryOp(node.Op, a, b, c)
-		fi.freeRegs(2)
+		fi.usedRegs = oldRegs
 	}
 }
 
@@ -181,13 +191,18 @@ func cgNameExp(fi *funcInfo, node *ast.NameExp, a int) {
 	}
 }
 
+// r[a] := prefix[key]
 func cgTableAccessExp(fi *funcInfo, node *ast.TableAccessExp, a int) {
-	b := fi.allocReg()
-	cgExp(fi, node.PrefixExp, b, 1)
-	c := fi.allocReg()
-	cgExp(fi, node.KeyExp, c, 1)
-	fi.emitGetTable(a, b, c)
-	fi.freeRegs(2)
+	oldRegs := fi.usedRegs
+	b, kindB := expToOpArg(fi, node.PrefixExp, ARG_RU)
+	c, _ := expToOpArg(fi, node.KeyExp, ARG_RK)
+	fi.usedRegs = oldRegs
+
+	if kindB == ARG_UPVAL {
+		fi.emitGetTabUp(a, b, c)
+	} else {
+		fi.emitGetTable(a, b, c)
+	}
 }
 
 func cgFuncCallExp(fi *funcInfo, node *ast.FuncCallExp, a, n int) {
@@ -201,8 +216,12 @@ func prepFuncCall(fi *funcInfo, node *ast.FuncCallExp, a int) int {
 
 	cgExp(fi, node.PrefixExp, a, 1)
 	if node.NameExp != nil {
-		c := 0x100 + fi.indexOfConstant(node.NameExp.Str)
+		fi.allocReg()
+		c, k := expToOpArg(fi, node.NameExp, ARG_RK)
 		fi.emitSelf(a, a, c)
+		if k == ARG_REG {
+			fi.freeRegs(1)
+		}
 	}
 	for i, arg := range node.Args {
 		tmp := fi.allocReg()
@@ -223,4 +242,44 @@ func prepFuncCall(fi *funcInfo, node *ast.FuncCallExp, a int) int {
 	}
 
 	return nArgs
+}
+
+func expToOpArg(fi *funcInfo, node ast.Exp, argKinds int) (arg, argKind int) {
+	if argKinds&ARG_CONST > 0 {
+		idx := -1
+		switch x := node.(type) {
+		case *ast.NilExp:
+			idx = fi.indexOfConstant(nil)
+		case *ast.FalseExp:
+			idx = fi.indexOfConstant(false)
+		case *ast.TrueExp:
+			idx = fi.indexOfConstant(true)
+		case *ast.IntegerExp:
+			idx = fi.indexOfConstant(x.Val)
+		case *ast.FloatExp:
+			idx = fi.indexOfConstant(x.Val)
+		case *ast.StringExp:
+			idx = fi.indexOfConstant(x.Str)
+		}
+		if idx >= 0 && idx <= 0xFF {
+			return 0x100 + idx, ARG_CONST
+		}
+	}
+
+	if nameExp, ok := node.(*ast.NameExp); ok {
+		if argKinds&ARG_REG > 0 {
+			if r := fi.slotOfLocVar(nameExp.Name); r >= 0 {
+				return r, ARG_REG
+			}
+		}
+		if argKinds&ARG_UPVAL > 0 {
+			if idx := fi.indexOfUpval(nameExp.Name); idx >= 0 {
+				return idx, ARG_UPVAL
+			}
+		}
+	}
+
+	a := fi.allocReg()
+	cgExp(fi, node, a, 1)
+	return a, ARG_REG
 }

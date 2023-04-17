@@ -83,14 +83,23 @@ func (fi *funcInfo) getJmpArgA() int {
 	}
 }
 
+/*
+           ______________
+          /  false? jmp  |
+         /               |
+while exp do block end <-'
+      ^           \
+      |___________/
+           jmp
+*/
 func cgWhileStat(fi *funcInfo, node *ast.WhileStat) {
 	pcBeforeExp := fi.pc()
 
-	r := fi.allocReg()
-	cgExp(fi, node.Exp, r, 1)
-	fi.freeReg()
+	oldRegs := fi.usedRegs
+	a, _ := expToOpArg(fi, node.Exp, ARG_REG)
+	fi.usedRegs = oldRegs
 
-	fi.emitTest(r, 0)
+	fi.emitTest(a, 0)
 	pcJmpToEnd := fi.emitJmp(0, 0)
 
 	fi.enterScope(true)
@@ -102,23 +111,38 @@ func cgWhileStat(fi *funcInfo, node *ast.WhileStat) {
 	fi.fixSbx(pcJmpToEnd, fi.pc()-pcJmpToEnd)
 }
 
+/*
+        ______________
+       |  false? jmp  |
+       V              /
+repeat block until exp
+*/
 func cgRepeatStat(fi *funcInfo, node *ast.RepeatStat) {
 	fi.enterScope(true)
 
 	pcBeforeBlock := fi.pc()
 	cgBlock(fi, node.Block)
 
-	r := fi.allocReg()
-	cgExp(fi, node.Exp, r, 1)
-	fi.freeReg()
+	oldRegs := fi.usedRegs
+	a, _ := expToOpArg(fi, node.Exp, ARG_REG)
+	fi.usedRegs = oldRegs
 
-	fi.emitTest(r, 0)
+	fi.emitTest(a, 0)
 	fi.emitJmp(fi.getJmpArgA(), pcBeforeBlock-fi.pc()-1)
 	fi.closeOpenUpvals()
 
 	fi.exitScope()
 }
 
+/*
+         _________________       _________________       _____________
+        / false? jmp      |     / false? jmp      |     / false? jmp  |
+       /                  V    /                  V    /              V
+if exp1 then block1 elseif exp2 then block2 elseif true then block3 end <-.
+                   \                       \                       \      |
+                    \_______________________\_______________________\_____|
+                    jmp                     jmp                     jmp
+*/
 func cgIfStat(fi *funcInfo, node *ast.IfStat) {
 	pcJmpToEnds := make([]int, len(node.Exps))
 	pcJmpToNextExp := -1
@@ -128,14 +152,16 @@ func cgIfStat(fi *funcInfo, node *ast.IfStat) {
 			fi.fixSbx(pcJmpToNextExp, fi.pc()-pcJmpToNextExp)
 		}
 
-		r := fi.allocReg()
-		cgExp(fi, exp, r, 1)
-		fi.freeReg()
-		fi.emitTest(r, 0)
+		oldRegs := fi.usedRegs
+		a, _ := expToOpArg(fi, exp, ARG_REG)
+		fi.usedRegs = oldRegs
+
+		fi.emitTest(a, 0)
 		pcJmpToNextExp = fi.emitJmp(0, 0)
 
+		block := node.Blocks[i]
 		fi.enterScope(false)
-		cgBlock(fi, node.Blocks[i])
+		cgBlock(fi, block)
 		fi.closeOpenUpvals()
 		fi.exitScope()
 		if i < len(node.Exps)-1 {
